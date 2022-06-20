@@ -1,9 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:vm_service/vm_service.dart';
-
-import '../../../../shared/eval_on_dart_library.dart';
+import 'package:flutter/services.dart';
+import 'package:heap_explorer/model.dart';
 import '../../../../shared/globals.dart';
 
 class DraftPane extends StatefulWidget {
@@ -14,69 +13,34 @@ class DraftPane extends StatefulWidget {
 }
 
 class _DraftPaneState extends State<DraftPane> {
-  String _isolateId = '';
-
-  ObjRef? _instance;
-
-  String? _result;
-
-  var _code;
+  String _message = '';
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('hello!!'),
+        Text(_message),
         MaterialButton(
-            child: const Text('Try It'),
-            onPressed: () async {
-              setState(() {
-                _isolateId =
-                    serviceManager.isolateManager!.mainIsolate!.value!.id!;
-              });
+          child: const Text('Serialize Heap Snapshot and Copy'),
+          onPressed: () async {
+            setState(() {
+              _message = 'taking heap snapshot...';
+            });
+            await Future.delayed(const Duration(milliseconds: 50));
 
-              // final profile =
-              //     await serviceManager.service!.getAllocationProfile(
-              //   _isolateId,
-              //   gc: true,
-              // );
+            final isolate =
+                serviceManager.isolateManager.selectedIsolate.value!;
+            final graph =
+                (await serviceManager.service?.getHeapSnapshotGraph(isolate))!;
+            final result = jsonEncode(MtHeap.fromHeapSnapshot(graph).toJson());
+            await Clipboard.setData(ClipboardData(text: result));
 
-              final classList =
-                  await serviceManager.service!.getClassList(_isolateId);
-              for (var item in classList.classes!) {
-                // for (var item in profile.members!) {
-                if (item!.name == 'MyClass') {
-                  final isolateRef =
-                      serviceManager.isolateManager!.mainIsolate!.value!;
-
-                  final instances = await serviceManager.service!.getInstances(
-                    _isolateId,
-                    item!.id!,
-                    20,
-                  );
-
-                  setState(() {
-                    _instance = instances.instances!.first!;
-                    _code = _instance!.json!['identityHashCode'];
-                  });
-
-                  final response = await serviceManager.service!
-                      .evaluate(_isolateId, _instance!.id!, 'hello()');
-
-                  setState(() {
-                    _result = response.json!['valueAsString'];
-                  });
-
-                  return;
-                }
-              }
-            }),
-        // Text('${_classHeapStats?.type}-${_classHeapStats?.classRef?.id}'),
-        Text('${_instance?.id}'),
-        Text('$_result'),
-        Text('$_code'),
-        Text('${_instance!.json}'),
+            setState(() {
+              _message = 'copied snapshot to clipboard';
+            });
+          },
+        ),
       ],
     );
   }

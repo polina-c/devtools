@@ -52,6 +52,10 @@ dependencies:
   vm_snapshot_analysis: ^0.7.1
   web_socket_channel: ^2.1.0
   # widget_icons: ^0.0.1
+  heap_explorer:
+    git:
+      url: git://github.com/polina-c/spikes.git
+      path: heap_explorer
 
 dev_dependencies:
   build_runner: ^2.0.4
