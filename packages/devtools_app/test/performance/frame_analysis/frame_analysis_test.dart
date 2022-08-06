@@ -12,6 +12,7 @@ import 'package:devtools_app/src/screens/performance/performance_controller.dart
 import 'package:devtools_app/src/screens/performance/performance_model.dart';
 import 'package:devtools_app/src/service/service_manager.dart';
 import 'package:devtools_app/src/shared/globals.dart';
+import 'package:devtools_app/src/shared/notifications.dart';
 import 'package:devtools_test/devtools_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,7 +36,15 @@ void main() {
       mockEnhanceTracingController = MockEnhanceTracingController();
       setGlobal(IdeTheme, IdeTheme());
       setGlobal(OfflineModeController, OfflineModeController());
-      setGlobal(ServiceConnectionManager, FakeServiceManager());
+      final fakeServiceManager = FakeServiceManager();
+      setGlobal(ServiceConnectionManager, fakeServiceManager);
+      setGlobal(NotificationService, NotificationService());
+      mockConnectedApp(
+        fakeServiceManager.connectedApp!,
+        isFlutterApp: true,
+        isProfileBuild: true,
+        isWebApp: false,
+      );
     });
 
     Future<void> pumpAnalysisView(
@@ -76,10 +85,6 @@ void main() {
       );
       expect(find.byType(FrameHints), findsOneWidget);
       expect(find.byType(FrameTimeVisualizer), findsOneWidget);
-    });
-
-    group('FrameHints', () {
-      // TODO(kenz): write tests for FrameHints widget.
     });
 
     group('FrameTimeVisualizer', () {
