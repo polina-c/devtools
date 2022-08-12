@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:vm_service/vm_service.dart' hide Stack;
 
 import '../../primitives/history_manager.dart';
 import '../../shared/common_widgets.dart';
@@ -13,7 +12,9 @@ import 'vm_class_display.dart';
 import 'vm_code_display.dart';
 import 'vm_developer_common_widgets.dart';
 import 'vm_field_display.dart';
+import 'vm_function_display.dart';
 import 'vm_object_model.dart';
+import 'vm_script_display.dart';
 
 /// Displays the VM information for the currently selected object in the
 /// program explorer.
@@ -62,11 +63,6 @@ String viewportTitle(VmObject? object) {
     return 'No object selected.';
   }
 
-  if (object is ScriptObject) {
-    final ref = object.ref as ScriptRef?;
-    return 'Script @ ${ref?.uri ?? '<uri>'}';
-  }
-
   return '${object.obj.type} ${object.name ?? '<name>'}';
 }
 
@@ -79,7 +75,7 @@ Widget buildObjectDisplay(VmObject obj) {
     );
   }
   if (obj is FuncObject) {
-    return const VMInfoCard(title: 'TO-DO: Display Function object data');
+    return VmFuncDisplay(function: obj);
   }
   if (obj is FieldObject) {
     return VmFieldDisplay(field: obj);
@@ -88,7 +84,7 @@ Widget buildObjectDisplay(VmObject obj) {
     return const VMInfoCard(title: 'TO-DO: Display Library object data');
   }
   if (obj is ScriptObject) {
-    return const VMInfoCard(title: 'TO-DO: Display Script object data');
+    return VmScriptDisplay(script: obj);
   }
   if (obj is InstanceObject) {
     return const VMInfoCard(title: 'TO-DO: Display Instance object data');
