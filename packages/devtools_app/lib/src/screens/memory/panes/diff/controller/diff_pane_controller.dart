@@ -44,7 +44,7 @@ class DiffPaneController extends DisposableController {
 
   Future<void> takeSnapshot() async {
     _isTakingSnapshot.value = true;
-    final future = snapshotTaker.take();
+
     final snapshots = core._snapshots;
 
     final item = SnapshotInstanceItem(
@@ -54,12 +54,21 @@ class DiffPaneController extends DisposableController {
     );
 
     snapshots.add(item);
-    item.initializeHeapData(await future);
+    final sw = Stopwatch()..start();
+    print('ts0: ${sw.elapsedMilliseconds}');
+    final snapshot = await snapshotTaker.take();
+    print('ts1: ${sw.elapsedMilliseconds}');
+    await item.initializeHeapData(snapshot);
+    print('ts2: ${sw.elapsedMilliseconds}');
 
     final newElementIndex = snapshots.value.length - 1;
+    print('ts3: ${sw.elapsedMilliseconds}');
     core._selectedSnapshotIndex.value = newElementIndex;
     _isTakingSnapshot.value = false;
+    print('ts4: ${sw.elapsedMilliseconds}');
+
     derived._updateValues();
+    print('ts5: ${sw.elapsedMilliseconds}');
   }
 
   Future<void> clearSnapshots() async {
@@ -85,7 +94,7 @@ class DiffPaneController extends DisposableController {
     final index = core.selectedSnapshotIndex.value;
     core._snapshots.removeAt(index);
     // We change the selectedIndex, because:
-    // 1. It is convenient UX
+    // 1. It is convenient UX.
     // 2. Otherwise the content will not be re-rendered.
     core._selectedSnapshotIndex.value = max(index - 1, 0);
     derived._updateValues();
