@@ -10,7 +10,7 @@ import '../instrumentation/model.dart';
 import 'model.dart';
 
 /// Analyzes notGCed leaks and returns result of the analysis.
-NotGCedAnalyzed analyseNotGCed(NotGCedAnalyzerTask task) {
+Future<NotGCedAnalyzed> analyseNotGCed(NotGCedAnalyzerTask task) async {
   analyzeHeapAndSetRetainingPaths(task.heap, task.reports);
 
   final leaksWithPath = task.reports.where((r) => r.retainingPath != null);
@@ -18,9 +18,10 @@ NotGCedAnalyzed analyseNotGCed(NotGCedAnalyzerTask task) {
   final leaksByCulprits = findCulprits(leaksWithPath);
 
   for (var report in leaksByCulprits.keys) {
-    final objectIndex = task.heap.objectIndexByIdentityHashCode(report.code);
+    final objectIndex =
+        await task.heap.objectIndexByIdentityHashCode(report.code);
     if (objectIndex != null) {
-      final path = task.heap.retainingPath(objectIndex);
+      final path = await task.heap.retainingPath(objectIndex);
       if (path != null) report.detailedPath = path.detailedPath();
     }
   }
@@ -53,10 +54,11 @@ void setDetailedPaths(AdaptedHeapData heap, List<LeakReport> notGCedLeaks) {
   }
 }
 
-HeapPath? _pathByIdentityHashCode(AdaptedHeapData heap, int code) {
-  final objectIndex = heap.objectIndexByIdentityHashCode(code);
+Future<HeapPath?> _pathByIdentityHashCode(
+    AdaptedHeapData heap, int code) async {
+  final objectIndex = await heap.objectIndexByIdentityHashCode(code);
   if (objectIndex == null) return null;
-  return heap.retainingPath(objectIndex);
+  return await heap.retainingPath(objectIndex);
 }
 
 /// Out of list of notGCed objects, identifies ones that hold others from
