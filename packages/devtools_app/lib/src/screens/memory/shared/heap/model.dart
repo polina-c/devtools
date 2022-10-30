@@ -5,6 +5,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:vm_service/vm_service.dart';
 
+import '../../../../primitives/utils.dart';
 import '../../primitives/class_name.dart';
 import '../../primitives/memory_utils.dart';
 
@@ -25,11 +26,10 @@ class _JsonFields {
 class AdaptedHeapData {
   @visibleForTesting
   AdaptedHeapData(
-    this.objects, {
+    this._objects, {
     this.rootIndex = _defaultRootIndex,
     DateTime? created,
-  })  : assert(objects.isNotEmpty),
-        assert(objects.length > rootIndex) {
+  }) {
     this.created = created ?? DateTime.now();
   }
 
@@ -37,20 +37,28 @@ class AdaptedHeapData {
     final createdJson = json[_JsonFields.created];
 
     return AdaptedHeapData(
-      (json[_JsonFields.objects] as List<dynamic>)
-          .map((e) => AdaptedHeapObject.fromJson(e))
-          .toList(),
+      Future.value(
+        (json[_JsonFields.objects] as List<dynamic>)
+            .map((e) => AdaptedHeapObject.fromJson(e))
+            .toList(),
+      ),
       created: createdJson == null ? null : DateTime.parse(createdJson),
       rootIndex: json[_JsonFields.rootIndex] ?? _defaultRootIndex,
     );
   }
 
   factory AdaptedHeapData.fromHeapSnapshot(HeapSnapshotGraph graph) {
-    return AdaptedHeapData(
-      graph.objects
-          .map((e) => AdaptedHeapObject.fromHeapSnapshotObject(e))
-          .toList(),
-    );
+    final sw = Stopwatch()..start();
+    print('fh0: ${sw.elapsedMilliseconds}');
+    final listOfFutures = graph.objects.map((e) async {
+      await delayForBatchProcessing();
+      return AdaptedHeapObject.fromHeapSnapshotObject(e);
+    }).toList();
+    print('fh1:! ${sw.elapsedMilliseconds}');
+    final futureOfList = Future.wait(listOfFutures);
+    final result = AdaptedHeapData(futureOfList);
+    print('fh2: ${sw.elapsedMilliseconds}');
+    return result;
   }
 
   /// Default value for rootIndex is taken from the doc:
@@ -59,39 +67,56 @@ class AdaptedHeapData {
 
   final int rootIndex;
 
-  AdaptedHeapObject get root => objects[rootIndex];
+  Future<AdaptedHeapObject> root() async => (await objects())[rootIndex];
 
-  final List<AdaptedHeapObject> objects;
+  Future<List<AdaptedHeapObject>> objects() async {
+    final result = await _objects;
+    assert(result.isNotEmpty);
+    assert(result.length > rootIndex);
+    return result;
+  }
+
+  final Future<List<AdaptedHeapObject>> _objects;
 
   bool isSpanningTreeBuilt = false;
 
   late DateTime created;
 
   /// Heap objects by identityHashCode.
-  late final Map<IdentityHashCode, int> _objectsByCode = Map.fromIterable(
-    Iterable.generate(objects.length),
-    key: (i) => objects[i].code,
-    value: (i) => i,
-  );
+  late final Future<Map<IdentityHashCode, int>> _objectsByCode =
+      _calculateObjectsByCode();
 
-  Map<String, dynamic> toJson() => {
-        _JsonFields.objects: objects.map((e) => e.toJson()).toList(),
-        _JsonFields.rootIndex: rootIndex,
-        _JsonFields.created: created.toIso8601String(),
-      };
+  Future<Map<IdentityHashCode, int>> _calculateObjectsByCode() async {
+    final theObjects = await objects();
+    return Map.fromIterable(
+      Iterable.generate(theObjects.length),
+      key: (i) => theObjects[i].code,
+      value: (i) => i,
+    );
+  }
 
-  int? objectIndexByIdentityHashCode(IdentityHashCode code) =>
-      _objectsByCode[code];
+  Future<Map<String, dynamic>> toJson() async {
+    return {
+      _JsonFields.objects: (await objects()).map((e) => e.toJson()).toList(),
+      _JsonFields.rootIndex: rootIndex,
+      _JsonFields.created: created.toIso8601String(),
+    };
+  }
 
-  HeapPath? retainingPath(int objectIndex) {
+  Future<int?> objectIndexByIdentityHashCode(IdentityHashCode code) async {
+    return (await _objectsByCode)[code];
+  }
+
+  Future<HeapPath?> retainingPath(int objectIndex) async {
     assert(isSpanningTreeBuilt);
 
-    if (objects[objectIndex].retainer == null) return null;
+    final theObjects = await objects();
+    if (theObjects[objectIndex].retainer == null) return null;
 
     final result = <AdaptedHeapObject>[];
 
     while (objectIndex >= 0) {
-      final object = objects[objectIndex];
+      final object = theObjects[objectIndex];
       result.add(object);
       objectIndex = object.retainer!;
     }
