@@ -25,6 +25,8 @@ cd devtools/packages/devtools_app
 
 ## Refresh and start
 
+NOTE: if the steps fail for you, delete the devtools folder and recreate it as instructed in [Setup and start](#setup-and-start)
+
 1. `cd` to the `devtools` directory created in the [Setup and start](#setup-and-start) section.
 
 2. Refresh and run DevTools (it will delete all your local changes!):
