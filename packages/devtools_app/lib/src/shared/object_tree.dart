@@ -127,6 +127,7 @@ Future<void> buildVariablesTree(
             );
             break;
           case InstanceKind.kList:
+            //variable.addChild(child)
             variable.addAllChildren(
               _createVariablesForElements(result, isolateRef),
             );
@@ -782,6 +783,7 @@ List<DartObjectNode> _createVariablesForFields(
   Set<String>? existingNames,
 }) {
   final variables = <DartObjectNode>[];
+  variables.add(DartObjectNode.text('references'));
   for (var field in instance.fields!) {
     final name = field.decl?.name;
     if (name == null) {
