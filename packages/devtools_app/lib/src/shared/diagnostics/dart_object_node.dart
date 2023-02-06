@@ -174,7 +174,11 @@ class DartObjectNode extends TreeNode<DartObjectNode> {
     );
   }
 
-  factory DartObjectNode.references(String text, ObjectReferences ref) {
+  factory DartObjectNode.references(
+    String text,
+    ObjectReferences ref, {
+    bool isEmpty = false,
+  }) {
     return DartObjectNode._(
       text: text,
       ref: ref,

@@ -177,8 +177,12 @@ void _addLiveReference(
   Object? instance,
   String namePrefix,
 ) {
-  if (instance is! InstanceRef) return;
+  if (instance is! Instance) return;
   if (isPrimativeInstanceKind(instance.kind)) return;
+
+  final isEmpty = (instance.associations ?? []).isEmpty &&
+      (instance.elements ?? []).isEmpty &&
+      (instance.fields ?? []).isEmpty;
 
   variables.add(
     DartObjectNode.references(
@@ -188,6 +192,7 @@ void _addLiveReference(
         isolateRef: isolateRef,
         value: instance,
       ),
+      isEmpty: isEmpty,
     ),
   );
 }
