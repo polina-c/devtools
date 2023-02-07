@@ -58,6 +58,13 @@ class ObjectReferences extends GenericInstanceRef {
         );
 
   final RefNodeType refNodeType;
+
+  bool isExpandable() {
+    final direction = refNodeType.direction;
+    if (direction == null) return true;
+    if (heapSelection != null)
+      return ref.heapSelection?.countOfReferences(ref.refNodeType.direction);
+  }
 }
 
 enum RefNodeType {

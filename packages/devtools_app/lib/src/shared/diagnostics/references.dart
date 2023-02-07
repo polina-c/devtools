@@ -177,12 +177,21 @@ void _addLiveReference(
   Object? instance,
   String namePrefix,
 ) {
-  if (instance is! Instance) return;
+  if (instance is! InstanceRef) return;
   if (isPrimativeInstanceKind(instance.kind)) return;
 
-  final isEmpty = (instance.associations ?? []).isEmpty &&
-      (instance.elements ?? []).isEmpty &&
-      (instance.fields ?? []).isEmpty;
+  if (namePrefix == 'childMapSimple') {
+    print('found');
+  }
+
+  final bool isEmpty;
+  if (instance is Instance) {
+    isEmpty = (instance.associations ?? []).isEmpty &&
+        (instance.elements ?? []).isEmpty &&
+        (instance.fields ?? []).isEmpty;
+  } else {
+    isEmpty = false;
+  }
 
   variables.add(
     DartObjectNode.references(
