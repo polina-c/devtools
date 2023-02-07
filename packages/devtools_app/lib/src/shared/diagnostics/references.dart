@@ -180,19 +180,6 @@ void _addLiveReference(
   if (instance is! InstanceRef) return;
   if (isPrimativeInstanceKind(instance.kind)) return;
 
-  if (namePrefix == 'childMapSimple') {
-    print('found');
-  }
-
-  final bool isEmpty;
-  if (instance is Instance) {
-    isEmpty = (instance.associations ?? []).isEmpty &&
-        (instance.elements ?? []).isEmpty &&
-        (instance.fields ?? []).isEmpty;
-  } else {
-    isEmpty = false;
-  }
-
   variables.add(
     DartObjectNode.references(
       '$namePrefix${instance.classRef!.name}',
@@ -201,7 +188,6 @@ void _addLiveReference(
         isolateRef: isolateRef,
         value: instance,
       ),
-      isEmpty: isEmpty,
     ),
   );
 }

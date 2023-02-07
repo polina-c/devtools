@@ -59,11 +59,23 @@ class ObjectReferences extends GenericInstanceRef {
 
   final RefNodeType refNodeType;
 
-  bool isExpandable() {
-    final direction = refNodeType.direction;
-    if (direction == null) return true;
-    if (heapSelection != null)
-      return ref.heapSelection?.countOfReferences(ref.refNodeType.direction);
+  /// Count of childrent for non root
+  int? childCount() {
+    if (refNodeType.isRoot) return null;
+
+    final selection = heapSelection;
+    if (selection != null) {
+      return selection.countOfReferences(refNodeType.direction);
+    }
+
+    // final theValue = value;
+    // if (theValue is Instance) {
+    //   return (theValue.associations ?? []).isEmpty &&
+    //       (theValue.elements ?? []).isEmpty &&
+    //       (theValue.fields ?? []).isEmpty;
+    // }
+
+    return 0;
   }
 }
 
@@ -91,6 +103,8 @@ enum RefNodeType {
   ;
 
   const RefNodeType([this.direction]);
+
+  bool get isRoot => direction == null;
 
   final RefDirection? direction;
 }

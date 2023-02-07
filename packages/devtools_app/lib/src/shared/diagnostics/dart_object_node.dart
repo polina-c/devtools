@@ -176,22 +176,12 @@ class DartObjectNode extends TreeNode<DartObjectNode> {
 
   factory DartObjectNode.references(
     String text,
-    ObjectReferences ref, {
-    bool isEmpty = false,
-  }) {
-    final int? childCount;
-
-    if (isEmpty) {
-      childCount = 0;
-    } else {
-      childCount =
-          ref.heapSelection?.countOfReferences(ref.refNodeType.direction);
-    }
-
+    ObjectReferences ref,
+  ) {
     return DartObjectNode._(
       text: text,
       ref: ref,
-      childCount: childCount,
+      childCount: ref.childCount(),
     );
   }
 
