@@ -23,6 +23,7 @@ abstract class ClassSampler {
     required bool includeImplementers,
   });
 
+  /// If false, eval menu items will be disabled.
   bool get isEvalEnabled;
 }
 
