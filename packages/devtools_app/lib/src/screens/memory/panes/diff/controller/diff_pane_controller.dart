@@ -132,6 +132,10 @@ class DiffPaneController extends DisposableController {
       ),
     );
   }
+
+  void exportCurrentItem() {
+    final item = (core.selectedItem as SnapshotInstanceItem).heap!.data;
+  }
 }
 
 /// Values that define what data to show on diff screen.
