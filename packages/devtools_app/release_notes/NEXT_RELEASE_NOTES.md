@@ -1,12 +1,12 @@
 This is draft for future release notes, that are going to land on
 [the Flutter website](https://docs.flutter.dev/development/tools/devtools/release-notes).
 
-# DevTools 2.25.0 release notes
+# DevTools 2.26.0 release notes
 
 Dart & Flutter DevTools - A Suite of Performance Tools for Dart and Flutter
 
 ## General updates
-* Improve DevTools tab bar navigation when the list of tabs is long - [#5875](https://github.com/flutter/devtools/pull/5875)
+TODO: Remove this section if there are not any general updates.
 
 ## Inspector updates
 TODO: Remove this section if there are not any general updates.
@@ -18,7 +18,7 @@ TODO: Remove this section if there are not any general updates.
 TODO: Remove this section if there are not any general updates.
 
 ## Memory updates
-* Add legend for class types - [#5937](https://github.com/flutter/devtools/pull/5937)
+TODO: Remove this section if there are not any general updates.
 
 ## Debugger updates
 TODO: Remove this section if there are not any general updates.
